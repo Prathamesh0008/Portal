@@ -2,7 +2,7 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #78350f;
 }
 
 @theme inline {
@@ -12,15 +12,59 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+main,
+section,
+article,
+table,
+tbody,
+td,
+li {
+  color: #78350f;
+}
+
+td,
+th {
+  color: #78350f !important;
+}
+
+.bg-white,
+.bg-amber-50,
+.bg-amber-100 {
+  color: #78350f;
+}
+
+input,
+select,
+textarea {
+  background-color: #ffffff !important;
+  color: #78350f !important;
+  color-scheme: light;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #92400e !important;
+  opacity: 1 !important;
+}
+
+select option {
+  background-color: #ffffff !important;
+  color: #78350f !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #78350f !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
 }
