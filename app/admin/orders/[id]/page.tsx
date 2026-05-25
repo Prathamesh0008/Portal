@@ -42,6 +42,8 @@ export default function AdminOrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isUploadingLabel, setIsUploadingLabel] = useState(false);
+  const [labelFile, setLabelFile] = useState<File | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [formData, setFormData] = useState({
     status: '',
@@ -136,6 +138,36 @@ export default function AdminOrderDetailPage() {
     }
   };
 
+  const handleUploadLabel = async () => {
+    if (!token || !params.id || !labelFile) return;
+
+    setIsUploadingLabel(true);
+    try {
+      const payload = new FormData();
+      payload.append('file', labelFile);
+
+      const response = await fetch(`/api/admin/orders/${params.id}/label`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: payload,
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to upload label');
+      }
+
+      setIsFormDirty(true);
+      setFormData((current) => ({ ...current, labelUrl: data.data.labelUrl }));
+      setLabelFile(null);
+      alert('Label uploaded. Click "Update Order" to save it for customer.');
+    } catch (error) {
+      console.error('Failed to upload label', error);
+      alert(error instanceof Error ? error.message : 'Failed to upload label');
+    } finally {
+      setIsUploadingLabel(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-amber-50 p-8">
@@ -152,12 +184,15 @@ export default function AdminOrderDetailPage() {
     );
   }
 
+  const recipientFullName = `${order.receiverFirstName || ''} ${order.receiverLastName || ''}`.trim();
+  const displayName = recipientFullName || '-';
+
   return (
     <div className="min-h-screen bg-amber-50 p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         <PortalNav
           title={order.orderNumber}
-          subtitle={`${order.customerId?.firstName || ''} ${order.customerId?.lastName || ''}`.trim()}
+          subtitle={displayName}
           homeHref="/admin"
           backHref="/admin/orders"
         />
@@ -217,6 +252,36 @@ export default function AdminOrderDetailPage() {
                     className="w-full px-4 py-2 border border-amber-200 rounded focus:outline-none focus:border-amber-400"
                     placeholder="https://example.com/label.pdf"
                   />
+                  {formData.labelUrl && (
+                    <a
+                      href={formData.labelUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block text-sm text-amber-900 underline"
+                    >
+                      Open current label
+                    </a>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-amber-900 mb-2">Upload Label (PDF/Image)</label>
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={(e) => setLabelFile(e.target.files?.[0] || null)}
+                      className="block w-full text-sm text-amber-900 file:mr-3 file:rounded file:border file:border-amber-300 file:bg-white file:px-3 file:py-2 file:text-amber-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleUploadLabel}
+                      disabled={isUploadingLabel || !labelFile}
+                      className="rounded border border-amber-300 bg-white px-4 py-2 text-sm text-amber-900 hover:bg-amber-50 disabled:opacity-50"
+                    >
+                      {isUploadingLabel ? 'Uploading...' : 'Upload'}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -264,7 +329,7 @@ export default function AdminOrderDetailPage() {
                   disabled={isUpdating}
                   className="w-full px-4 py-2 bg-amber-900 text-white rounded hover:bg-amber-800 disabled:opacity-50 transition"
                 >
-                  {isUpdating ? 'Updating...' : order.source === 'google-sheet' ? 'Update Google Sheet' : 'Update Order'}
+                  {isUpdating ? 'Updating...' : 'Update'}
                 </button>
               </div>
             </CardContent>
@@ -327,7 +392,7 @@ export default function AdminOrderDetailPage() {
           <CardContent>
             <div className="space-y-2 text-sm">
               <p className="font-semibold text-amber-900">
-                {order.receiverFirstName} {order.receiverLastName}
+                {displayName}
               </p>
               <p className="text-amber-700">{order.receiverAddress} {order.receiverHouseNumber}</p>
               <p className="text-amber-700">

@@ -23,7 +23,7 @@ function ShippingLoginForm() {
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/shipping';
 
-  const useCredentials = (nextEmail: string) => {
+  const applyCredentials = (nextEmail: string) => {
     setEmail(nextEmail);
     setPassword('password123');
   };
@@ -47,7 +47,7 @@ function ShippingLoginForm() {
     <div className="min-h-screen bg-linear-to-br from-amber-50 to-amber-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-amber-900 mb-2">KVA Logistics</h1>
+          <h1 className="text-4xl font-bold text-amber-900 mb-2">ParcelPilot</h1>
           <p className="text-amber-700">Shipping Partner Portal</p>
         </div>
 
@@ -101,14 +101,14 @@ function ShippingLoginForm() {
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => useCredentials('dpd@example.com')}
+                onClick={() => applyCredentials('dpd@example.com')}
                 className="rounded bg-amber-900 px-3 py-2 text-white transition hover:bg-amber-800"
               >
                 Use DPD
               </button>
               <button
                 type="button"
-                onClick={() => useCredentials('fedex@example.com')}
+                onClick={() => applyCredentials('fedex@example.com')}
                 className="rounded bg-amber-900 px-3 py-2 text-white transition hover:bg-amber-800"
               >
                 Use FedEx

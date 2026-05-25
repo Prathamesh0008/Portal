@@ -3,6 +3,22 @@ import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
 import { successResponse, errorResponse, getTokenFromRequest, getPayloadFromToken } from '@/lib/response';
 import { findLocalOrder, updateLocalOrder, useLocalData } from '@/lib/localData';
+import { getGoogleSheetOrders } from '@/lib/googleSheetsOrders';
+
+function hasOrderAccess(payload: { role: string; userId: string; email: string }, order: { courier?: string; customerId?: unknown }) {
+  if (payload.role === 'CUSTOMER') {
+    const customer = typeof order.customerId === 'string' ? null : order.customerId;
+    const customerEmail = customer && typeof customer === 'object' && 'email' in customer ? String(customer.email || '') : '';
+    // Legacy sheet rows may not have customer email; allow those for now to avoid false "not found".
+    if (customerEmail && customerEmail.toLowerCase() !== payload.email.toLowerCase()) {
+      return false;
+    }
+  }
+
+  if (payload.role === 'SHIPPING_DPD' && order.courier !== 'DPD') return false;
+  if (payload.role === 'SHIPPING_FEDEX' && order.courier !== 'FEDEX') return false;
+  return true;
+}
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
@@ -12,6 +28,20 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
     if (!payload) {
       return errorResponse('Unauthorized', 401);
+    }
+
+    const sheetOrder = (await getGoogleSheetOrders()).find(
+      (order) =>
+        order._id === params.id ||
+        order.id === params.id ||
+        order.orderNumber === params.id ||
+        `sheet-${order.orderNumber}` === params.id
+    );
+    if (sheetOrder) {
+      if (!hasOrderAccess(payload, sheetOrder)) {
+        return errorResponse('Access denied', 403);
+      }
+      return successResponse(sheetOrder, 'Order retrieved successfully');
     }
 
     if (useLocalData) {
@@ -74,6 +104,12 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return errorResponse('Unauthorized', 401);
     }
 
+    if (payload.role === 'CUSTOMER') {
+      return errorResponse('Customers cannot update order status directly', 403);
+    }
+
+    const body = await request.json();
+
     if (useLocalData) {
       const order = findLocalOrder(params.id);
 
@@ -93,8 +129,21 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
         return errorResponse('Access denied', 403);
       }
 
-      const body = await request.json();
-      const updatedOrder = updateLocalOrder(params.id, body);
+      const updates: Record<string, unknown> = {};
+
+      if (payload.role === 'ADMIN' || payload.role === 'SHIPPING_DPD' || payload.role === 'SHIPPING_FEDEX') {
+        if (body.status) updates.status = body.status;
+        if (body.trackingId) updates.trackingId = body.trackingId;
+        if (body.labelUrl) updates.labelUrl = body.labelUrl;
+        if (body.estimatedDeliveryDate) updates.estimatedDeliveryDate = body.estimatedDeliveryDate;
+        if (body.shippingNotes) updates.shippingNotes = body.shippingNotes;
+      }
+
+      if (payload.role === 'ADMIN' && body.adminNotes) {
+        updates.adminNotes = body.adminNotes;
+      }
+
+      const updatedOrder = updateLocalOrder(params.id, updates);
       return successResponse(updatedOrder, 'Order updated successfully');
     }
 
@@ -119,7 +168,6 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return errorResponse('Access denied', 403);
     }
 
-    const body = await request.json();
     const { status, trackingId, labelUrl, estimatedDeliveryDate, shippingNotes, adminNotes } = body;
 
     // Update allowed fields based on role

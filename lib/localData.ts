@@ -133,56 +133,7 @@ const users: LocalUser[] = [
   },
 ];
 
-const orders: LocalOrder[] = [
-  {
-    _id: 'local-order-1',
-    orderNumber: 'ORD-LOCAL-1001',
-    customerId: 'local-customer',
-    routeType: 'EU_TO_EU',
-    courier: 'DPD',
-    status: 'PENDING',
-    receiverFirstName: 'Anna',
-    receiverLastName: 'Jansen',
-    receiverCompany: 'Demo Store',
-    receiverCountry: 'DE',
-    receiverCity: 'Berlin',
-    receiverPostalCode: '10115',
-    receiverAddress: 'Invalidenstrasse',
-    receiverHouseNumber: '12',
-    receiverEmail: 'anna@example.com',
-    receiverPhone: '+49123456789',
-    productName: 'Sample EU parcel',
-    quantity: 1,
-    weight: 2,
-    parcelCount: 1,
-    createdAt: now,
-    updatedAt: now,
-  },
-  {
-    _id: 'local-order-2',
-    orderNumber: 'ORD-LOCAL-1002',
-    customerId: 'local-customer',
-    routeType: 'EU_TO_US',
-    courier: 'FEDEX',
-    status: 'SHIPPED',
-    trackingId: 'FX-LOCAL-1002',
-    receiverFirstName: 'Michael',
-    receiverLastName: 'Smith',
-    receiverCountry: 'US',
-    receiverCity: 'New York',
-    receiverPostalCode: '10001',
-    receiverAddress: 'West 31st Street',
-    receiverHouseNumber: '25',
-    receiverEmail: 'michael@example.com',
-    receiverPhone: '+12125550100',
-    productName: 'Sample US parcel',
-    quantity: 2,
-    weight: 4,
-    parcelCount: 2,
-    createdAt: now,
-    updatedAt: now,
-  },
-];
+const orders: LocalOrder[] = [];
 
 const recipients: LocalRecipient[] = [
   {
@@ -369,10 +320,12 @@ export function findLocalOrderWithCustomer(id: string) {
 export function createLocalOrder(customerId: string, input: Record<string, unknown>) {
   const routeType = input.routeType === 'EU_TO_US' ? 'EU_TO_US' : 'EU_TO_EU';
   const timestamp = new Date().toISOString();
+  const orderNumber = nextFiveDigitOrderNumber();
   const order: LocalOrder = {
     ...input,
-    _id: randomUUID(),
-    orderNumber: nextFiveDigitOrderNumber(),
+    // Keep local IDs aligned with sheet-backed IDs so detail URLs remain stable.
+    _id: `sheet-${orderNumber}`,
+    orderNumber,
     customerId,
     routeType,
     courier: routeType === 'EU_TO_EU' ? 'DPD' : 'FEDEX',

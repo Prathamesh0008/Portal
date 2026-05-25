@@ -29,6 +29,7 @@ export interface SheetOrder {
   createdAt: string;
   updatedAt: string;
   source: 'google-sheet';
+  sheetRowNumber?: number;
 }
 
 interface SheetValues {
@@ -139,7 +140,22 @@ function rowsToObjects(values: string[][]) {
   return rows
     .map((row, rowIndex) =>
       normalizedHeaders.reduce<SheetRow>((acc, header, index) => {
+        let sourceRow = row;
+        if (row.length > normalizedHeaders.length) {
+          const leadingOffset = row.length - normalizedHeaders.length;
+          const leadingCells = row.slice(0, leadingOffset);
+          const hasOnlyEmptyLeadingCells = leadingCells.every((cell) => !String(cell || '').trim());
+          if (hasOnlyEmptyLeadingCells) {
+            // Some historical rows were appended starting after column A.
+            // Shift them left so header mapping stays aligned.
+            sourceRow = row.slice(leadingOffset);
+          }
+        }
+
         acc[header] = String(row[index] || '');
+        if (sourceRow !== row) {
+          acc[header] = String(sourceRow[index] || '');
+        }
         acc.__sheetRowNumber = String(rowIndex + 2);
         return acc;
       }, {})
@@ -170,14 +186,6 @@ function quotedSheetName(sheetName: string) {
   return `'${sheetName.replace(/'/g, "''")}'`;
 }
 
-function appendRangeForHeaders(sheetName: string, headers: string[]) {
-  const lastHeaderIndex = headers.reduce((lastIndex, header, index) => {
-    return header ? index : lastIndex;
-  }, 0);
-
-  return `${quotedSheetName(sheetName)}!A:${columnLetter(lastHeaderIndex)}`;
-}
-
 function getHeaderIndex(headers: string[], key: keyof typeof HEADER_ALIASES) {
   const aliases = HEADER_ALIASES[key].map(normalizeHeader);
   return headers.findIndex((header) => aliases.includes(header));
@@ -189,6 +197,7 @@ function mapSheetRow(row: SheetRow, index: number): SheetOrder {
   const customerNameParts = splitFullName(customerName);
   const receiverFirstName = getValue(row, 'receiverFirstName') || customerNameParts.firstName;
   const receiverLastName = getValue(row, 'receiverLastName') || customerNameParts.lastName;
+  const receiverFullNameParts = splitFullName(`${receiverFirstName} ${receiverLastName}`.trim());
   const receiverCountry = getValue(row, 'receiverCountry');
   const routeType = parseRouteType(getValue(row, 'routeType'), receiverCountry);
   const courier = parseCourier(getValue(row, 'courier'), routeType);
@@ -200,8 +209,17 @@ function mapSheetRow(row: SheetRow, index: number): SheetOrder {
     orderNumber,
     customerId: {
       _id: `sheet-customer-${getValue(row, 'customerEmail') || 'unknown'}`,
-      firstName: getValue(row, 'customerFirstName') || customerNameParts.firstName || 'Sheet',
-      lastName: getValue(row, 'customerLastName') || customerNameParts.lastName || 'Customer',
+      // Keep sheet-backed display names aligned with Address Details -> Name.
+      firstName:
+        receiverFullNameParts.firstName ||
+        getValue(row, 'customerFirstName') ||
+        customerNameParts.firstName ||
+        'Sheet',
+      lastName:
+        receiverFullNameParts.lastName ||
+        getValue(row, 'customerLastName') ||
+        customerNameParts.lastName ||
+        'Customer',
       email: getValue(row, 'customerEmail'),
       phone: getValue(row, 'customerPhone'),
     },
@@ -227,6 +245,7 @@ function mapSheetRow(row: SheetRow, index: number): SheetOrder {
     createdAt,
     updatedAt: toIsoDate(getValue(row, 'updatedAt') || createdAt),
     source: 'google-sheet',
+    sheetRowNumber: Number(row.__sheetRowNumber || 0) || undefined,
   };
 }
 
@@ -388,7 +407,8 @@ export async function updateGoogleSheetOrder(
 
   const spreadsheetId = process.env.GOOGLE_SHEETS_ORDERS_SPREADSHEET_ID;
   const sheet = await getGoogleSheetValues();
-  const orderNumberIndex = getHeaderIndex(sheet.headers, 'orderNumber');
+  const headers = [...sheet.headers];
+  const orderNumberIndex = getHeaderIndex(headers, 'orderNumber');
 
   if (!spreadsheetId || orderNumberIndex === -1) {
     throw new Error('Unable to find ORDER ID column in Google Sheet');
@@ -412,10 +432,24 @@ export async function updateGoogleSheetOrder(
   }
 
   const data: Array<{ range: string; values: string[][] }> = [];
-  const updateCell = (key: keyof typeof HEADER_ALIASES, value: string | undefined) => {
+  const headerUpdates: Array<{ range: string; values: string[][] }> = [];
+
+  const ensureHeaderColumn = (key: keyof typeof HEADER_ALIASES, headerName: string) => {
+    let columnIndex = getHeaderIndex(headers, key);
+    if (columnIndex !== -1) return columnIndex;
+
+    columnIndex = headers.length;
+    headers.push(normalizeHeader(headerName));
+    headerUpdates.push({
+      range: `${quotedSheetName(sheet.sheetName)}!${columnLetter(columnIndex)}1`,
+      values: [[headerName]],
+    });
+    return columnIndex;
+  };
+
+  const updateCell = (key: keyof typeof HEADER_ALIASES, value: string | undefined, headerName: string) => {
     if (value === undefined) return;
-    const columnIndex = getHeaderIndex(sheet.headers, key);
-    if (columnIndex === -1) return;
+    const columnIndex = ensureHeaderColumn(key, headerName);
 
     data.push({
       range: `${quotedSheetName(sheet.sheetName)}!${columnLetter(columnIndex)}${updateRowIndex + 1}`,
@@ -423,10 +457,10 @@ export async function updateGoogleSheetOrder(
     });
   };
 
-  updateCell('status', updates.status ? portalStatusToSheetStatus(updates.status) : undefined);
-  updateCell('trackingId', updates.trackingId);
-  updateCell('labelUrl', updates.labelUrl);
-  updateCell('productSent', updates.productSent);
+  updateCell('status', updates.status ? portalStatusToSheetStatus(updates.status) : undefined, 'Order status');
+  updateCell('trackingId', updates.trackingId, 'TRACKING');
+  updateCell('labelUrl', updates.labelUrl, 'Label URL');
+  updateCell('productSent', updates.productSent, 'Product Sent');
 
   if (data.length === 0) {
     throw new Error('No matching Google Sheet columns found to update');
@@ -441,7 +475,7 @@ export async function updateGoogleSheetOrder(
     },
     body: JSON.stringify({
       valueInputOption: 'USER_ENTERED',
-      data,
+      data: [...headerUpdates, ...data],
     }),
   });
 
@@ -467,6 +501,8 @@ function formatSheetDate(value = new Date()) {
 }
 
 function valueForHeader(header: string, order: Record<string, any>, orderNumber: string, customerName: string) {
+  const receiverFullName = `${order.receiverFirstName || ''} ${order.receiverLastName || ''}`.trim();
+
   switch (header) {
     case 'date':
       return formatSheetDate();
@@ -477,7 +513,7 @@ function valueForHeader(header: string, order: Record<string, any>, orderNumber:
       return orderNumber;
     case 'customer name':
     case 'name':
-      return customerName;
+      return receiverFullName || customerName;
     case 'address':
     case 'street':
       return order.receiverAddress || '';
@@ -536,20 +572,29 @@ export async function appendGoogleSheetOrders(
     const orderNumber = String(order.orderNumber || 10001 + index);
     return sheet.headers.map((header) => valueForHeader(header, order, orderNumber, options.customerName));
   });
-  const appendRange = appendRangeForHeaders(sheet.sheetName, sheet.headers);
 
   const accessToken = await getGoogleAccessToken();
-  const response = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${encodeURIComponent(appendRange)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ values }),
-    }
-  );
+  const firstDataRow = sheet.values.length + 1;
+  const lastColumn = columnLetter(Math.max(sheet.headers.length - 1, 0));
+  const data = values.map((rowValues, index) => {
+    const rowNumber = firstDataRow + index;
+    return {
+      range: `${quotedSheetName(sheet.sheetName)}!A${rowNumber}:${lastColumn}${rowNumber}`,
+      values: [rowValues],
+    };
+  });
+
+  const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchUpdate`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      valueInputOption: 'USER_ENTERED',
+      data,
+    }),
+  });
 
   if (!response.ok) {
     throw new Error(`Google Sheets append returned ${response.status}`);

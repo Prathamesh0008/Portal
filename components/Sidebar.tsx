@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from './useAuth';
@@ -40,8 +41,14 @@ export default function Sidebar() {
         } z-40 md:z-auto`}
       >
         <div className="mb-8 pb-6 border-b border-amber-200">
-          <h1 className="text-2xl font-bold text-amber-900">KVA</h1>
-          <p className="text-sm text-amber-700">Logistics</p>
+          <Image
+            src="/parcelpilot-logo.svg"
+            alt="ParcelPilot"
+            width={220}
+            height={56}
+            className="h-14 w-auto"
+            priority
+          />
         </div>
 
         <nav className="flex-1 space-y-2">

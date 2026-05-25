@@ -66,7 +66,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-amber-900">Dashboard</h1>
-          <p className="text-amber-700 mt-1">Welcome back! Here's your shipping overview.</p>
+          <p className="text-amber-700 mt-1">Welcome back! Here&apos;s your shipping overview.</p>
         </div>
 
         {/* Stats Grid */}

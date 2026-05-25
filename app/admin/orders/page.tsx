@@ -17,6 +17,8 @@ interface Order {
   productName?: string;
   productSent?: string;
   quantity?: number;
+  receiverFirstName?: string;
+  receiverLastName?: string;
   receiverAddress?: string;
   receiverCity?: string;
   receiverState?: string;
@@ -33,6 +35,7 @@ export default function AdminOrdersPage() {
     courier: '',
     status: '',
     routeType: '',
+    user: '',
   });
 
   useEffect(() => {
@@ -45,6 +48,7 @@ export default function AdminOrdersPage() {
         if (filters.courier) params.append('courier', filters.courier);
         if (filters.status) params.append('status', filters.status);
         if (filters.routeType) params.append('routeType', filters.routeType);
+        if (filters.user.trim()) params.append('user', filters.user.trim());
 
         const response = await fetch(`/api/admin/orders?${params.toString()}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -72,6 +76,27 @@ export default function AdminOrdersPage() {
     };
   }, [token, filters]);
 
+  const getUserLabel = (order: Order) => {
+    const name = `${order.customerId?.firstName || ''} ${order.customerId?.lastName || ''}`.trim();
+    if (name) return name;
+
+    const email = order.customerId?.email?.trim();
+    if (email) return email;
+
+    return '-';
+  };
+
+  const statusStyles: Record<string, string> = {
+    PENDING: 'bg-amber-100 text-amber-900',
+    ACCEPTED: 'bg-blue-100 text-blue-900',
+    PROCESSING: 'bg-indigo-100 text-indigo-900',
+    LABEL_CREATED: 'bg-purple-100 text-purple-900',
+    SHIPPED: 'bg-cyan-100 text-cyan-900',
+    IN_TRANSIT: 'bg-sky-100 text-sky-900',
+    DELIVERED: 'bg-green-100 text-green-900',
+    CANCELLED: 'bg-red-100 text-red-900',
+  };
+
   return (
     <div className="min-h-screen bg-amber-50 p-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -83,7 +108,14 @@ export default function AdminOrdersPage() {
             <CardTitle>Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <input
+                value={filters.user}
+                onChange={(e) => setFilters({ ...filters, user: e.target.value })}
+                placeholder="Search user name/email"
+                className="px-4 py-2 border border-amber-200 rounded focus:outline-none"
+              />
+
               <select
                 value={filters.courier}
                 onChange={(e) => setFilters({ ...filters, courier: e.target.value })}
@@ -121,7 +153,7 @@ export default function AdminOrdersPage() {
               </select>
 
               <button
-                onClick={() => setFilters({ courier: '', status: '', routeType: '' })}
+                onClick={() => setFilters({ courier: '', status: '', routeType: '', user: '' })}
                 className="px-4 py-2 bg-amber-200 text-amber-900 rounded hover:bg-amber-300 transition"
               >
                 Clear Filters
@@ -138,11 +170,12 @@ export default function AdminOrdersPage() {
             ) : orders.length === 0 ? (
               <p className="text-amber-700">No orders found</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-amber-200">
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Order #</th>
+              <div className="overflow-x-auto rounded-lg border border-amber-200">
+                <table className="min-w-[1300px] w-full text-sm">
+                  <thead className="sticky top-0 z-10 bg-amber-100">
+                    <tr className="border-b border-amber-300">
+                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Order</th>
+                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">User</th>
                       <th className="text-left py-3 px-4 text-amber-900 font-semibold">Customer</th>
                       <th className="text-left py-3 px-4 text-amber-900 font-semibold">Address</th>
                       <th className="text-left py-3 px-4 text-amber-900 font-semibold">City</th>
@@ -157,37 +190,41 @@ export default function AdminOrdersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((order) => (
-                      <tr key={order._id} className="border-b border-amber-100 hover:bg-amber-50">
-                        <td className="py-3 px-4">{order.orderNumber}</td>
-                        <td className="py-3 px-4 text-sm">
-                          {order.customerId ? (
-                            <span className="text-amber-900">
-                              {order.customerId.firstName} {order.customerId.lastName}
-                            </span>
-                          ) : (
-                            'N/A'
-                          )}
+                    {orders.map((order, index) => (
+                      <tr
+                        key={`${order._id}-${order.createdAt}-${index}`}
+                        className={`border-b border-amber-100 align-top hover:bg-amber-50 ${index % 2 === 0 ? 'bg-white' : 'bg-amber-50/40'}`}
+                      >
+                        <td className="py-3 px-4 font-semibold text-amber-900">{order.orderNumber}</td>
+                        <td className="py-3 px-4 text-amber-900">{getUserLabel(order)}</td>
+                        <td className="py-3 px-4 text-amber-900">
+                          {`${order.receiverFirstName || ''} ${order.receiverLastName || ''}`.trim() || '-'}
                         </td>
-                        <td className="py-3 px-4 text-sm">{order.receiverAddress || '-'}</td>
-                        <td className="py-3 px-4 text-sm">{order.receiverCity || '-'}</td>
-                        <td className="py-3 px-4 text-sm">{order.receiverPostalCode || '-'}</td>
-                        <td className="py-3 px-4 text-sm">{order.receiverCountry || '-'}</td>
-                        <td className="py-3 px-4 text-sm">
+                        <td className="py-3 px-4 text-amber-900 max-w-[220px] whitespace-normal break-words">{order.receiverAddress || '-'}</td>
+                        <td className="py-3 px-4 text-amber-900">{order.receiverCity || '-'}</td>
+                        <td className="py-3 px-4 text-amber-900">{order.receiverPostalCode || '-'}</td>
+                        <td className="py-3 px-4 text-amber-900">{order.receiverCountry || '-'}</td>
+                        <td className="py-3 px-4 text-amber-900 max-w-[180px] whitespace-normal break-words">
                           {order.productName || '-'}
-                          {order.productSent && <span className="block text-xs text-amber-600">Sent: {order.productSent}</span>}
+                          {order.productSent && <span className="mt-1 block text-xs text-amber-700">Sent: {order.productSent}</span>}
                         </td>
-                        <td className="py-3 px-4 text-sm">{order.quantity ?? '-'}</td>
-                        <td className="py-3 px-4 text-sm font-mono">{order.trackingId || '-'}</td>
+                        <td className="py-3 px-4 text-amber-900">{order.quantity ?? '-'}</td>
+                        <td className="py-3 px-4 font-mono text-amber-900">{order.trackingId || '-'}</td>
                         <td className="py-3 px-4">
-                          <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-900">
+                          <span
+                            className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                              statusStyles[order.status] || 'bg-amber-100 text-amber-900'
+                            }`}
+                          >
                             {order.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-sm">{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td className="py-3 px-4 text-amber-900">{new Date(order.createdAt).toLocaleDateString()}</td>
                         <td className="py-3 px-4">
                           <Link href={`/admin/orders/${order._id}`}>
-                            <span className="text-amber-900 hover:underline font-medium">View</span>
+                            <span className="inline-flex rounded border border-amber-300 bg-white px-3 py-1.5 font-medium text-amber-900 hover:bg-amber-100">
+                              View
+                            </span>
                           </Link>
                         </td>
                       </tr>

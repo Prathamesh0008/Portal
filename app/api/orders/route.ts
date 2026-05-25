@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
+import User from '@/models/User';
 import { successResponse, errorResponse, getTokenFromRequest, getPayloadFromToken } from '@/lib/response';
 import { createLocalOrder, createLocalRecipient, findLocalUserById, listLocalOrders, useLocalData } from '@/lib/localData';
 import Recipient from '@/models/Recipient';
@@ -67,7 +68,16 @@ async function appendOrdersToSheet(orders: Array<Record<string, any>>, customerN
 function localCustomerName(userId: string, fallback: string) {
   const user = findLocalUserById(userId);
   if (!user) return fallback;
-  return user.company || `${user.firstName} ${user.lastName}`.trim() || fallback;
+  const fullName = `${user.firstName} ${user.lastName}`.trim();
+  return fullName || user.company || fallback;
+}
+
+async function databaseCustomerName(userId: string, fallback: string) {
+  const user = await User.findById(userId).select('firstName lastName company email');
+  if (!user) return fallback;
+
+  const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+  return fullName || user.company || user.email || fallback;
 }
 
 export async function POST(request: NextRequest) {
@@ -247,7 +257,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const sheetSyncError = await appendOrdersToSheet(orders, payload.email);
+    const customerName = await databaseCustomerName(payload.userId, payload.email);
+    const sheetSyncError = await appendOrdersToSheet(orders, customerName);
 
     return successResponse(
       { orders, count: orders.length, _id: orders[0]?._id, sheetSynced: !sheetSyncError, sheetSyncError },

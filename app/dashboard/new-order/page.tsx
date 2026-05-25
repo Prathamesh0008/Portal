@@ -50,6 +50,12 @@ interface ParcelPayload {
   parcelCount: number;
 }
 
+interface ProductRow {
+  id: string;
+  productName: string;
+  quantity: number;
+}
+
 const defaultDraft: ParcelDraft = {
   receiverCountry: '',
   receiverName: '',
@@ -79,10 +85,6 @@ const countries = [
   { value: 'US', label: 'United States' },
 ];
 
-function routeForCountry(country: string): RouteType {
-  return country === 'US' ? 'EU_TO_US' : 'EU_TO_EU';
-}
-
 function splitName(name: string) {
   const parts = name.trim().split(/\s+/);
   return {
@@ -91,11 +93,11 @@ function splitName(name: string) {
   };
 }
 
-function toParcelPayload(draft: ParcelDraft): ParcelPayload {
+function toParcelPayload(draft: ParcelDraft, routeType: RouteType): ParcelPayload {
   const { firstName, lastName } = splitName(draft.receiverName);
 
   return {
-    routeType: routeForCountry(draft.receiverCountry),
+    routeType,
     receiverFirstName: firstName,
     receiverLastName: lastName,
     receiverCompany: draft.receiverCompany,
@@ -120,6 +122,14 @@ function toParcelPayload(draft: ParcelDraft): ParcelPayload {
   };
 }
 
+function toParcelPayloadWithProduct(draft: ParcelDraft, product: ProductRow, routeType: RouteType): ParcelPayload {
+  return {
+    ...toParcelPayload(draft, routeType),
+    productName: product.productName,
+    quantity: Number(product.quantity) || 1,
+  };
+}
+
 function toDraft(parcel: ParcelPayload): ParcelDraft {
   return {
     receiverCountry: parcel.receiverCountry,
@@ -140,7 +150,7 @@ function toDraft(parcel: ParcelPayload): ParcelDraft {
   };
 }
 
-function isDraftReady(draft: ParcelDraft) {
+function isDraftReady(draft: ParcelDraft, hasProducts: boolean) {
   return Boolean(
     draft.receiverCountry &&
       draft.receiverName.trim() &&
@@ -149,7 +159,7 @@ function isDraftReady(draft: ParcelDraft) {
       draft.receiverPostalCode.trim() &&
       draft.receiverHouseNumber.trim() &&
       draft.receiverEmail.trim() &&
-      draft.productName.trim()
+      (hasProducts || draft.productName.trim())
   );
 }
 
@@ -161,22 +171,84 @@ function parcelSummary(parcel: ParcelPayload) {
 export default function NewOrderPage() {
   const router = useRouter();
   const { token } = useAuth();
+  const [selectedRoute, setSelectedRoute] = useState<RouteType | null>(null);
   const [draft, setDraft] = useState<ParcelDraft>(defaultDraft);
+  const [products, setProducts] = useState<ProductRow[]>([]);
   const [savedParcels, setSavedParcels] = useState<ParcelPayload[]>([]);
   const [saveRecipient, setSaveRecipient] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const routeCountries = selectedRoute === 'EU_TO_US'
+    ? countries.filter((country) => country.value === 'US')
+    : countries.filter((country) => country.value !== 'US');
+
+  const chooseRoute = (route: RouteType | null) => {
+    setSelectedRoute(route);
+    setDraft((current) => ({ ...current, receiverCountry: '' }));
+  };
 
   const updateDraft = (field: keyof ParcelDraft, value: string | number) => {
     setDraft((current) => ({ ...current, [field]: value }));
   };
 
+  const addProductRow = () => {
+    if (!draft.productName.trim()) {
+      alert('Please enter a product name.');
+      return;
+    }
+
+    const quantity = Number(draft.quantity) || 1;
+    const product: ProductRow = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      productName: draft.productName.trim(),
+      quantity,
+    };
+
+    setProducts((current) => [...current, product]);
+    setDraft((current) => ({ ...current, productName: '', quantity: 1 }));
+  };
+
+  const removeProductRow = (id: string) => {
+    setProducts((current) => current.filter((product) => product.id !== id));
+  };
+
+  const collectDraftParcels = () => {
+    if (!selectedRoute) {
+      return { parcels: [], error: 'Please select a route type first.' };
+    }
+
+    const currentProducts = [...products];
+    if (draft.productName.trim()) {
+      currentProducts.push({
+        id: 'draft-product',
+        productName: draft.productName.trim(),
+        quantity: Number(draft.quantity) || 1,
+      });
+    }
+
+    if (!isDraftReady(draft, currentProducts.length > 0)) {
+      return { parcels: [], error: 'Please complete receiver details and add at least one product.' };
+    }
+
+    if (currentProducts.length === 0) {
+      return { parcels: [], error: 'Please add at least one product.' };
+    }
+
+    return {
+      parcels: currentProducts.map((product) => toParcelPayloadWithProduct(draft, product, selectedRoute)),
+      error: null,
+    };
+  };
+
   const saveCurrentParcel = () => {
-    if (!isDraftReady(draft)) {
-      alert('Please complete country, name, city, address, postal code, house number, email, and product name.');
+    const { parcels, error } = collectDraftParcels();
+    if (error) {
+      alert(error);
       return false;
     }
 
-    setSavedParcels((current) => [...current, toParcelPayload(draft)]);
+    setSavedParcels((current) => [...current, ...parcels]);
+    setProducts([]);
     setDraft(defaultDraft);
     return true;
   };
@@ -186,6 +258,7 @@ export default function NewOrderPage() {
     if (!parcel) return;
 
     setDraft(toDraft(parcel));
+    setProducts([]);
     setSavedParcels((current) => current.filter((_, parcelIndex) => parcelIndex !== index));
   };
 
@@ -197,8 +270,9 @@ export default function NewOrderPage() {
     if (!token) return;
 
     const parcels = [...savedParcels];
-    if (isDraftReady(draft)) {
-      parcels.push(toParcelPayload(draft));
+    const draftCollection = collectDraftParcels();
+    if (!draftCollection.error) {
+      parcels.push(...draftCollection.parcels);
     }
 
     if (parcels.length === 0) {
@@ -243,8 +317,56 @@ export default function NewOrderPage() {
       <div className="min-h-screen border border-amber-300 bg-white p-4 text-amber-950 md:p-6">
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
           <main className="space-y-4">
+            {!selectedRoute && (
+              <section className="border border-amber-300 bg-amber-50 p-6">
+                <h2 className="text-2xl font-semibold text-amber-900">Choose Route Type</h2>
+                <p className="mt-2 text-sm text-amber-700">Please select shipment route before creating an order.</p>
+                <div className="mt-4 max-w-md space-y-3">
+                  <select
+                    defaultValue=""
+                    onChange={(event) => {
+                      const value = event.target.value as RouteType | '';
+                      if (value) {
+                        chooseRoute(value);
+                      }
+                    }}
+                    className="h-11 w-full rounded border border-amber-300 bg-white px-4 text-amber-900 outline-none focus:border-amber-600"
+                  >
+                    <option value="" disabled>
+                      Select route
+                    </option>
+                    <option value="EU_TO_EU">EU to EU</option>
+                    <option value="EU_TO_US">EU to US</option>
+                  </select>
+                  <p className="text-xs text-amber-700">
+                    EU to EU: European destinations | EU to US: United States destinations
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {selectedRoute && (
+              <>
+                <section className="border border-amber-300 bg-white p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-amber-700">Selected Route</p>
+                      <p className="text-lg font-semibold text-amber-900">
+                        {selectedRoute === 'EU_TO_EU' ? 'EU to EU' : 'EU to US'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => chooseRoute(null)}
+                      className="rounded border border-amber-300 px-3 py-2 text-sm text-amber-900 hover:bg-amber-50"
+                    >
+                      Change Route
+                    </button>
+                  </div>
+                </section>
+
             <div className="border border-amber-300 bg-amber-50 px-4 py-3">
-              <div className="h-10 border border-amber-200 bg-[linear-gradient(135deg,#d8f3f1_25%,#fdf6e7_25%,#fdf6e7_50%,#d8f3f1_50%,#d8f3f1_75%,#fdf6e7_75%)] bg-[length:48px_48px] px-5 py-2">
+              <div className="h-10 border border-amber-200 bg-white px-5 py-2">
                 <span className="font-semibold text-amber-950">Who is the receiver?</span>
               </div>
             </div>
@@ -263,7 +385,7 @@ export default function NewOrderPage() {
                     className="mt-2 h-11 w-full border border-amber-300 bg-white px-4 text-amber-950 outline-none focus:border-amber-600"
                   >
                     <option value="">Select country</option>
-                    {countries.map((country) => (
+                    {routeCountries.map((country) => (
                       <option key={country.value} value={country.value}>
                         {country.label}
                       </option>
@@ -422,13 +544,48 @@ export default function NewOrderPage() {
                   <button
                     type="button"
                     className="border border-amber-500 bg-amber-400 px-5 py-2 text-sm text-amber-950 hover:bg-amber-300"
-                    onClick={() => updateDraft('quantity', Number(draft.quantity || 0) + 1)}
+                    onClick={addProductRow}
                   >
                     + Add Product
                   </button>
                 </div>
+
+                {products.length > 0 && (
+                  <div className="mt-4 overflow-x-auto border border-amber-300">
+                    <table className="min-w-full bg-white text-sm">
+                      <thead className="bg-amber-100">
+                        <tr>
+                          <th className="border-b border-amber-300 px-3 py-2 text-left font-semibold text-amber-950">#</th>
+                          <th className="border-b border-amber-300 px-3 py-2 text-left font-semibold text-amber-950">Product Name</th>
+                          <th className="border-b border-amber-300 px-3 py-2 text-left font-semibold text-amber-950">Quantity</th>
+                          <th className="border-b border-amber-300 px-3 py-2 text-left font-semibold text-amber-950">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {products.map((product, index) => (
+                          <tr key={product.id}>
+                            <td className="border-b border-amber-200 px-3 py-2">{index + 1}</td>
+                            <td className="border-b border-amber-200 px-3 py-2">{product.productName}</td>
+                            <td className="border-b border-amber-200 px-3 py-2">{product.quantity}</td>
+                            <td className="border-b border-amber-200 px-3 py-2">
+                              <button
+                                type="button"
+                                onClick={() => removeProductRow(product.id)}
+                                className="border border-red-200 bg-red-50 px-2 py-1 text-red-700 hover:bg-red-100"
+                              >
+                                Remove
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </section>
+              </>
+            )}
           </main>
 
           <aside className="h-fit border border-amber-300 bg-amber-50 p-4">

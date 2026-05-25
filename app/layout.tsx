@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'KVA Logistics Portal',
+  title: 'ParcelPilot Portal',
   description: 'Multi-portal logistics platform for customers, admins and shipping partners.',
 };
 

@@ -8,7 +8,7 @@ export default function HomePage() {
       <div className="w-full max-w-5xl bg-white border border-amber-200 rounded-3xl shadow-xl overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2">
           <div className="p-10 bg-amber-900 text-white">
-            <h1 className="text-5xl font-bold mb-4">KVA Logistics</h1>
+            <h1 className="text-5xl font-bold mb-4">ParcelPilot</h1>
             <p className="text-amber-200 text-lg leading-relaxed">
               A professional multi-portal logistics platform for Customers, Admins, and Shipping Partners.
             </p>

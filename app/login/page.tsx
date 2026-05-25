@@ -44,7 +44,7 @@ function LoginForm() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-amber-900 mb-2">KVA Logistics</h1>
+          <h1 className="text-4xl font-bold text-amber-900 mb-2">ParcelPilot</h1>
           <p className="text-amber-700">Customer Portal</p>
         </div>
 
@@ -94,7 +94,7 @@ function LoginForm() {
 
           <div className="mt-6 text-center">
             <p className="text-amber-700 text-sm">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/register" className="font-semibold text-amber-900 hover:underline">
                 Register here
               </Link>

@@ -9,8 +9,31 @@ function sortNewestFirst<T extends { createdAt?: string }>(orders: T[]) {
   return [...orders].sort((a, b) => {
     const aTime = new Date(a.createdAt || 0).getTime();
     const bTime = new Date(b.createdAt || 0).getTime();
-    return bTime - aTime;
+    if (bTime !== aTime) return bTime - aTime;
+
+    const aRow = Number((a as { sheetRowNumber?: number }).sheetRowNumber || 0);
+    const bRow = Number((b as { sheetRowNumber?: number }).sheetRowNumber || 0);
+    if (bRow !== aRow) return bRow - aRow;
+
+    return 0;
   });
+}
+
+function matchesUserFilter(
+  order: { customerId?: string | { firstName?: string; lastName?: string; email?: string } },
+  userFilter: string
+) {
+  if (!userFilter) return true;
+
+  const term = userFilter.trim().toLowerCase();
+  if (!term) return true;
+
+  const customer = typeof order.customerId === 'string' ? null : order.customerId;
+  if (!customer) return false;
+
+  const fullName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim().toLowerCase();
+  const email = String(customer.email || '').toLowerCase();
+  return fullName.includes(term) || email.includes(term);
 }
 
 export async function GET(request: NextRequest) {
@@ -27,6 +50,7 @@ export async function GET(request: NextRequest) {
     const routeType = searchParams.get('routeType');
     const courier = searchParams.get('courier');
     const status = searchParams.get('status');
+    const user = searchParams.get('user') || '';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
@@ -45,7 +69,7 @@ export async function GET(request: NextRequest) {
         status: status || undefined,
         }),
         ...sheetOrders,
-      ]);
+      ]).filter((order) => matchesUserFilter(order, user));
       const skip = (page - 1) * limit;
       const orders = filteredOrders.slice(skip, skip + limit);
 
@@ -78,10 +102,9 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .populate('customerId', 'firstName lastName email');
 
-    const dbTotal = await Order.countDocuments(filter);
-    const mergedOrders = sortNewestFirst([...dbOrders, ...sheetOrders]);
+    const mergedOrders = sortNewestFirst([...dbOrders, ...sheetOrders]).filter((order) => matchesUserFilter(order, user));
     const orders = mergedOrders.slice(skip, skip + limit);
-    const total = dbTotal + sheetOrders.length;
+    const total = mergedOrders.length;
 
     return successResponse(
       {
