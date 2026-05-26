@@ -15,8 +15,8 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const [email, setEmail] = useState('customer@example.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -49,7 +49,7 @@ function LoginForm() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-lg border-2 border-amber-200 p-8 shadow-lg">
+        <div className="bg-white rounded-lg border-2 border-amber-200 p-6 sm:p-8 shadow-lg">
           <h2 className="text-2xl font-bold text-amber-900 mb-6">Login</h2>
 
           {error && (
@@ -100,13 +100,6 @@ function LoginForm() {
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Demo credentials */}
-        <div className="mt-6 bg-amber-100 border border-amber-300 rounded-lg p-4 text-sm text-amber-900">
-          <p className="font-semibold mb-2">Demo Credentials:</p>
-          <p>Email: customer@example.com</p>
-          <p>Password: password123</p>
         </div>
       </div>
     </div>

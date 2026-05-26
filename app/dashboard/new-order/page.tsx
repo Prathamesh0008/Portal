@@ -315,7 +315,7 @@ export default function NewOrderPage() {
   return (
     <DashboardLayout>
       <div className="min-h-screen border border-amber-300 bg-white p-4 text-amber-950 md:p-6">
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+        <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_420px]">
           <main className="space-y-4">
             {!selectedRoute && (
               <section className="border border-amber-300 bg-amber-50 p-6">
@@ -348,7 +348,7 @@ export default function NewOrderPage() {
             {selectedRoute && (
               <>
                 <section className="border border-amber-300 bg-white p-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="text-sm text-amber-700">Selected Route</p>
                       <p className="text-lg font-semibold text-amber-900">
@@ -411,7 +411,7 @@ export default function NewOrderPage() {
                   />
                 </label>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-[260px_1fr]">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr]">
                   <label className="block text-sm text-amber-950">
                     City
                     <input
@@ -481,7 +481,7 @@ export default function NewOrderPage() {
 
                 <label className="block text-sm text-amber-950">
                   Mobile phone number (optional)
-                  <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr]">
+                  <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr]">
                     <select
                       value={draft.receiverCountryCode}
                       onChange={(event) => updateDraft('receiverCountryCode', event.target.value)}
@@ -519,7 +519,7 @@ export default function NewOrderPage() {
 
             <section className="border border-amber-300 bg-amber-50 p-4">
               <div className="border border-amber-300 bg-white p-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_240px]">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_240px]">
                   <label className="block text-xs text-amber-950">
                     Product Name
                     <input
@@ -552,7 +552,7 @@ export default function NewOrderPage() {
 
                 {products.length > 0 && (
                   <div className="mt-4 overflow-x-auto border border-amber-300">
-                    <table className="min-w-full bg-white text-sm">
+                    <table className="min-w-[560px] w-full bg-white text-sm">
                       <thead className="bg-amber-100">
                         <tr>
                           <th className="border-b border-amber-300 px-3 py-2 text-left font-semibold text-amber-950">#</th>
@@ -599,7 +599,7 @@ export default function NewOrderPage() {
                 savedParcels.map((parcel, index) => (
                   <div
                     key={`${parcel.receiverEmail}-${index}`}
-                    className="flex items-center justify-between gap-3 border border-amber-300 bg-white p-3 text-sm"
+                    className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border border-amber-300 bg-white p-3 text-sm"
                   >
                     <span className="min-w-0 flex-1 truncate">
                       Parcel {index + 1}: {parcelSummary(parcel)}
@@ -628,7 +628,7 @@ export default function NewOrderPage() {
             </div>
           </aside>
 
-          <div className="border border-amber-300 bg-white p-4 xl:col-span-2">
+          <div className="border border-amber-300 bg-white p-4 2xl:col-span-2">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <label className="flex items-center gap-3 text-sm text-amber-950">
                 <input

@@ -72,6 +72,20 @@ function localCustomerName(userId: string, fallback: string) {
   return fullName || user.company || fallback;
 }
 
+function dedupeByOrderNumber<T extends { orderNumber?: string; _id?: string; id?: string }>(orders: T[]) {
+  const seen = new Set<string>();
+  const unique: T[] = [];
+
+  for (const order of orders) {
+    const key = String(order.orderNumber || order._id || order.id || '');
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(order);
+  }
+
+  return unique;
+}
+
 async function databaseCustomerName(userId: string, fallback: string) {
   const user = await User.findById(userId).select('firstName lastName company email');
   if (!user) return fallback;
@@ -141,7 +155,6 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const {
-      routeType,
       senderFirstName,
       senderLastName,
       senderCompany,
@@ -156,28 +169,6 @@ export async function POST(request: NextRequest) {
       senderCountryCode,
       senderPhone,
       senderReference,
-      receiverFirstName,
-      receiverLastName,
-      receiverCompany,
-      receiverCountry,
-      receiverCity,
-      receiverPostalCode,
-      receiverAddress,
-      receiverHouseNumber,
-      receiverAddition,
-      receiverExtraInfo,
-      receiverEmail,
-      receiverCountryCode,
-      receiverPhone,
-      receiverReference,
-      productName,
-      quantity,
-      weight,
-      length,
-      width,
-      height,
-      parcelCount,
-      notes,
     } = body;
 
     // Validate required fields
@@ -289,14 +280,20 @@ export async function GET(request: NextRequest) {
 
     if (useLocalData) {
       const localOrders = listLocalOrders({ customerId: payload.userId });
-      return successResponse(sortNewestFirst([...localOrders, ...customerSheetOrders]), 'Orders retrieved successfully');
+      return successResponse(
+        dedupeByOrderNumber(sortNewestFirst([...localOrders, ...customerSheetOrders])),
+        'Orders retrieved successfully'
+      );
     }
 
     await dbConnect();
 
     const orders = await Order.find({ customerId: payload.userId }).sort({ createdAt: -1 });
 
-    return successResponse(sortNewestFirst([...orders, ...customerSheetOrders]), 'Orders retrieved successfully');
+    return successResponse(
+      dedupeByOrderNumber(sortNewestFirst([...orders, ...customerSheetOrders])),
+      'Orders retrieved successfully'
+    );
   } catch (error: any) {
     console.error('Order retrieval error:', error);
     return errorResponse('Failed to retrieve orders', 500, error.message);

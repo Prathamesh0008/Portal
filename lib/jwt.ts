@@ -1,6 +1,10 @@
 import jwt, { type Secret, type SignOptions } from 'jsonwebtoken';
 
-const JWT_SECRET: Secret = process.env.JWT_SECRET || 'kva_logistics_secret_key';
+if (!process.env.JWT_SECRET) {
+  throw new Error('Missing JWT_SECRET environment variable');
+}
+
+const JWT_SECRET: Secret = process.env.JWT_SECRET;
 
 export interface TokenPayload {
   userId: string;
@@ -18,7 +22,7 @@ export function createToken(
 export function verifyToken(token: string): TokenPayload | null {
   try {
     return jwt.verify(token, JWT_SECRET) as TokenPayload;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -26,7 +30,7 @@ export function verifyToken(token: string): TokenPayload | null {
 export function decodeToken(token: string): TokenPayload | null {
   try {
     return jwt.decode(token) as TokenPayload;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

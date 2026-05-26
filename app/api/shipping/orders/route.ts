@@ -13,6 +13,20 @@ function sortNewestFirst<T extends { createdAt?: string }>(orders: T[]) {
   });
 }
 
+function dedupeByOrderNumber<T extends { orderNumber?: string; _id?: string; id?: string }>(orders: T[]) {
+  const seen = new Set<string>();
+  const unique: T[] = [];
+
+  for (const order of orders) {
+    const key = String(order.orderNumber || order._id || order.id || '');
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(order);
+  }
+
+  return unique;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = getTokenFromRequest(request);
@@ -35,13 +49,13 @@ export async function GET(request: NextRequest) {
     });
 
     if (useLocalData) {
-      const filteredOrders = sortNewestFirst([
+      const filteredOrders = dedupeByOrderNumber(sortNewestFirst([
         ...listLocalOrdersWithCustomers({
         courier,
         status: status || undefined,
         }),
         ...sheetOrders,
-      ]);
+      ]));
       const skip = (page - 1) * limit;
       const orders = filteredOrders.slice(skip, skip + limit);
 
@@ -71,7 +85,7 @@ export async function GET(request: NextRequest) {
       .populate('customerId', 'firstName lastName email phone');
 
     const dbTotal = await Order.countDocuments(filter);
-    const mergedOrders = sortNewestFirst([...dbOrders, ...sheetOrders]);
+    const mergedOrders = dedupeByOrderNumber(sortNewestFirst([...dbOrders, ...sheetOrders]));
     const orders = mergedOrders.slice(skip, skip + limit);
     const total = dbTotal + sheetOrders.length;
 

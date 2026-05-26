@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Recipient from '@/models/Recipient';
 import { deleteLocalRecipient, updateLocalRecipient, useLocalData } from '@/lib/localData';
@@ -18,6 +19,9 @@ export async function PATCH(request: NextRequest, context: Context) {
     }
 
     const { id } = await context.params;
+    if (!mongoose.Types.ObjectId.isValid(payload.userId) || !mongoose.Types.ObjectId.isValid(id)) {
+      return errorResponse('Invalid recipient id', 400);
+    }
     const body = await request.json();
 
     if (useLocalData) {
@@ -57,6 +61,9 @@ export async function DELETE(_request: NextRequest, context: Context) {
     }
 
     const { id } = await context.params;
+    if (!mongoose.Types.ObjectId.isValid(payload.userId) || !mongoose.Types.ObjectId.isValid(id)) {
+      return errorResponse('Invalid recipient id', 400);
+    }
 
     if (useLocalData) {
       const deleted = deleteLocalRecipient(payload.userId, id);

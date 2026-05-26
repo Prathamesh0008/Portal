@@ -91,7 +91,7 @@ export default function DashboardPage() {
 
         {/* Quick Action */}
         <Link href="/dashboard/new-order">
-          <button className="w-full md:w-auto bg-amber-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-amber-800 transition mb-4">
+          <button className="w-full md:w-auto bg-amber-900 text-white px-6 py-3 rounded-lg font-medium hover:bg-amber-800 transition mb-">
             + Create New Order
           </button>
         </Link>

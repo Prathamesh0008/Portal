@@ -14,19 +14,14 @@ export default function ShippingLoginPage() {
 }
 
 function ShippingLoginForm() {
-  const [email, setEmail] = useState('dpd@example.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
   const searchParams = useSearchParams();
   const redirect = searchParams.get('redirect') || '/shipping';
-
-  const applyCredentials = (nextEmail: string) => {
-    setEmail(nextEmail);
-    setPassword('password123');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +46,7 @@ function ShippingLoginForm() {
           <p className="text-amber-700">Shipping Partner Portal</p>
         </div>
 
-        <div className="bg-white rounded-lg border-2 border-amber-200 p-8 shadow-lg">
+        <div className="bg-white rounded-lg border-2 border-amber-200 p-6 sm:p-8 shadow-lg">
           <h2 className="text-2xl font-bold text-amber-900 mb-6">Shipping Login</h2>
 
           {error && (
@@ -93,28 +88,6 @@ function ShippingLoginForm() {
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>
-
-          <div className="mt-6 bg-amber-100 border border-amber-300 rounded-lg p-4 text-sm text-amber-900">
-            <p className="font-semibold mb-2">Demo Shipping Credentials:</p>
-            <p><strong>DPD:</strong> dpd@example.com / password123</p>
-            <p><strong>FedEx:</strong> fedex@example.com / password123</p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => applyCredentials('dpd@example.com')}
-                className="rounded bg-amber-900 px-3 py-2 text-white transition hover:bg-amber-800"
-              >
-                Use DPD
-              </button>
-              <button
-                type="button"
-                onClick={() => applyCredentials('fedex@example.com')}
-                className="rounded bg-amber-900 px-3 py-2 text-white transition hover:bg-amber-800"
-              >
-                Use FedEx
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

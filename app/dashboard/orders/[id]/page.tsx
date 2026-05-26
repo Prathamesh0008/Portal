@@ -178,25 +178,25 @@ export default function OrderDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                 <span className="text-amber-700">Product Name</span>
                 <span className="font-semibold text-amber-900">{order.productName}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                 <span className="text-amber-700">Quantity</span>
                 <span className="font-semibold text-amber-900">{order.quantity}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                 <span className="text-amber-700">Weight</span>
                 <span className="font-semibold text-amber-900">{order.weight} kg</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                 <span className="text-amber-700">Route</span>
                 <span className="font-semibold text-amber-900">
                   {order.routeType === 'EU_TO_EU' ? 'EU to EU' : 'EU to US'}
                 </span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                 <span className="text-amber-700">Courier</span>
                 <span className="font-semibold text-amber-900">{order.courier}</span>
               </div>

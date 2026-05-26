@@ -64,7 +64,7 @@ export default function ShippingDashboard() {
   const routeType = user?.role === 'SHIPPING_DPD' ? 'EU to EU' : 'EU to US';
 
   return (
-    <div className="min-h-screen bg-amber-50 p-8">
+    <div className="min-h-screen bg-amber-50 p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         <PortalNav
           title="Shipping Dashboard"
@@ -97,7 +97,7 @@ export default function ShippingDashboard() {
         {/* Recent Orders */}
         <Card>
           <CardHeader>
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Assigned Orders</CardTitle>
               <Link href="/shipping/orders">
                 <span className="text-amber-900 hover:underline font-medium">View All</span>
@@ -111,7 +111,7 @@ export default function ShippingDashboard() {
               <p className="text-amber-700">No orders assigned yet</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="min-w-[720px] w-full">
                   <thead>
                     <tr className="border-b border-amber-200">
                       <th className="text-left py-2 px-4 text-amber-900 font-semibold">Order #</th>

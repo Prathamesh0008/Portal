@@ -1,9 +1,9 @@
 'use client';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/Card';
+import { Card, CardContent } from '@/components/Card';
 import PortalNav from '@/components/PortalNav';
 export default function ShippingPartnersPage() {
   return (
-    <div className="min-h-screen bg-amber-50 p-8">
+    <div className="min-h-screen bg-amber-50 p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <PortalNav title="Shipping Partners" subtitle="Manage shipping partner access" homeHref="/admin" backHref="/admin" />
         <Card>

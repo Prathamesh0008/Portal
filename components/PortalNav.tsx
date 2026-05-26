@@ -26,7 +26,7 @@ export default function PortalNav({ title, subtitle, homeHref, backHref }: Porta
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push('/');
   };
 
   return (

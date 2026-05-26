@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { errorResponse, getPayloadFromToken, getTokenFromRequest, successResponse } from '@/lib/response';
@@ -10,6 +11,10 @@ export async function GET(request: NextRequest) {
     const payload = token ? getPayloadFromToken(token) : null;
 
     if (!token || !payload) {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(payload.userId)) {
       return errorResponse('Unauthorized', 401);
     }
 

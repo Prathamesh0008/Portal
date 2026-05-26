@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/components/useAuth';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/Card';
+import { Card, CardContent } from '@/components/Card';
 import PortalNav from '@/components/PortalNav';
 
 interface Order {
@@ -66,7 +66,7 @@ export default function ShippingOrdersPage() {
   }, [token, filter]);
 
   return (
-    <div className="min-h-screen bg-amber-50 p-8">
+    <div className="min-h-screen bg-amber-50 p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <PortalNav title="My Orders" subtitle="Assigned shipments" homeHref="/shipping" backHref="/shipping" />
 
@@ -96,7 +96,7 @@ export default function ShippingOrdersPage() {
               <p className="text-amber-700">No orders found</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="min-w-[1000px] w-full">
                   <thead>
                     <tr className="border-b border-amber-200">
                       <th className="text-left py-3 px-4 text-amber-900 font-semibold">Order ID</th>

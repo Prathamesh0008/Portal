@@ -101,7 +101,23 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
     await order.save();
 
-    return successResponse(order, 'Order updated successfully');
+    let sheetSyncError: string | null = null;
+    try {
+      await updateGoogleSheetOrder(String(order.orderNumber), {
+        status: order.status,
+        trackingId: order.trackingId,
+        labelUrl: order.labelUrl,
+        productSent: order.productSent,
+      });
+    } catch (error: any) {
+      sheetSyncError = error?.message || 'Google Sheet sync failed';
+      console.error('Google Sheet sync error (admin update):', error);
+    }
+
+    return successResponse(
+      { order, sheetSynced: !sheetSyncError, sheetSyncError },
+      sheetSyncError ? `Order updated, but Google Sheet sync failed: ${sheetSyncError}` : 'Order updated successfully'
+    );
   } catch (error: any) {
     console.error('Order update error:', error);
     return errorResponse(error.message || 'Failed to update order', 500);

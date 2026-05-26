@@ -23,7 +23,7 @@ export default function Sidebar() {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    router.push('/');
   };
 
   return (
@@ -53,7 +53,7 @@ export default function Sidebar() {
 
         <nav className="flex-1 space-y-2">
           {menuItems.map((item) => (
-            <Link key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} onClick={() => setIsMobileOpen(false)}>
               <span className="flex items-center gap-3 px-4 py-3 rounded hover:bg-amber-100 text-amber-900 transition">
                 <span className="w-6 text-xs font-bold text-amber-700">{item.icon}</span>
                 <span>{item.label}</span>

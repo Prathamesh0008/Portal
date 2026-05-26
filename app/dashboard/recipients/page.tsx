@@ -208,13 +208,13 @@ export default function RecipientsPage() {
       <div className="min-h-screen border border-amber-300 bg-white p-4 text-amber-950 md:p-6">
         <div className="mx-auto max-w-6xl space-y-4">
           <div className="border border-amber-300 bg-amber-50 px-4 py-3">
-            <div className="h-10 border border-amber-200 bg-[linear-gradient(135deg,#d8f3f1_25%,#fdf6e7_25%,#fdf6e7_50%,#d8f3f1_50%,#d8f3f1_75%,#fdf6e7_75%)] bg-[length:48px_48px] px-5 py-2">
+            <div className="h-10 border border-amber-200 bg-white px-5 py-2">
               <span className="font-semibold text-amber-950">Recipients</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[340px_1fr]">
-            <aside className="min-h-[640px] border border-amber-300 bg-white">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[340px_1fr]">
+            <aside className="border border-amber-300 bg-white">
               <div className="border-b border-amber-300 bg-amber-50 p-4">
                 <div className="flex items-center justify-between text-amber-950">
                   <h1 className="text-lg font-normal">Recipients</h1>
@@ -272,14 +272,14 @@ export default function RecipientsPage() {
                 <p className="text-amber-700">Select a recipient to view details.</p>
               ) : (
                 <>
-                  <div className="flex items-center justify-between gap-4 border-b border-amber-300 pb-3">
+                  <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-amber-300 pb-3">
                     <h2 className="text-base font-semibold text-amber-950">Address Details</h2>
                     <span className="border border-amber-300 bg-white px-3 py-2 text-sm text-amber-950">
                       {form.name}
                     </span>
                   </div>
 
-                  <div className="mt-4 flex gap-2">
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                     <button
                       type="button"
                       onClick={handleUpdate}
@@ -332,7 +332,7 @@ export default function RecipientsPage() {
                       />
                     </label>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                       <label className="block text-sm text-amber-950">
                         City
                         <input
@@ -351,7 +351,7 @@ export default function RecipientsPage() {
                       </label>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                       <label className="block text-sm text-amber-950">
                         Postal code
                         <input
@@ -402,7 +402,7 @@ export default function RecipientsPage() {
 
                     <label className="block text-sm text-amber-950">
                       Mobile phone number (optional)
-                      <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr]">
+                      <div className="mt-2 grid grid-cols-1 gap-4 lg:grid-cols-[220px_1fr]">
                         <select
                           value={form.countryCode}
                           onChange={(event) => updateForm('countryCode', event.target.value)}

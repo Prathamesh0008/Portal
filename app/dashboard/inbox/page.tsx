@@ -1,6 +1,6 @@
 'use client';
 import DashboardLayout from '@/components/DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/Card';
+import { Card, CardContent } from '@/components/Card';
 
 export default function InboxPage() {
   return (

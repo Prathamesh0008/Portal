@@ -69,7 +69,9 @@ export interface LocalRecipient {
   updatedAt: string;
 }
 
-export const useLocalData = process.env.USE_LOCAL_DATA !== 'false';
+// Force persistent MongoDB-backed behavior across all API routes.
+// Local in-memory data helpers remain only as optional fallback utilities.
+export const useLocalData = false;
 
 const now = new Date().toISOString();
 
@@ -165,7 +167,8 @@ function nextFiveDigitOrderNumber() {
 }
 
 export function sanitizeUser(user: LocalUser) {
-  const { password: _password, ...safeUser } = user;
+  const safeUser = { ...user };
+  delete (safeUser as Partial<LocalUser>).password;
   return safeUser;
 }
 

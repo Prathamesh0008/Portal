@@ -4,16 +4,16 @@ import Link from 'next/link';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-amber-50 via-amber-100 to-amber-50 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-linear-to-br from-amber-50 via-amber-100 to-amber-50 flex items-center justify-center p-4 sm:p-6">
       <div className="w-full max-w-5xl bg-white border border-amber-200 rounded-3xl shadow-xl overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-2">
-          <div className="p-10 bg-amber-900 text-white">
-            <h1 className="text-5xl font-bold mb-4">ParcelPilot</h1>
+          <div className="p-6 sm:p-10 bg-amber-900 text-white">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4">ParcelPilot</h1>
             <p className="text-amber-200 text-lg leading-relaxed">
               A professional multi-portal logistics platform for Customers, Admins, and Shipping Partners.
             </p>
           </div>
-          <div className="p-10 space-y-6 bg-amber-50">
+          <div className="p-6 sm:p-10 space-y-6 bg-amber-50">
             <div>
               <h2 className="text-2xl font-semibold text-amber-900 mb-2">Choose your portal</h2>
               <p className="text-amber-700">Login to the portal that matches your role.</p>

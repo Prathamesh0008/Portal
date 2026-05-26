@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Recipient from '@/models/Recipient';
 import { createLocalRecipient, listLocalRecipients, useLocalData } from '@/lib/localData';
@@ -10,6 +11,10 @@ export async function GET(request: NextRequest) {
     const payload = token ? getPayloadFromToken(token) : null;
 
     if (!payload || payload.role !== 'CUSTOMER') {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(payload.userId)) {
       return errorResponse('Unauthorized', 401);
     }
 
@@ -32,6 +37,10 @@ export async function POST(request: NextRequest) {
     const payload = token ? getPayloadFromToken(token) : null;
 
     if (!payload || payload.role !== 'CUSTOMER') {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(payload.userId)) {
       return errorResponse('Unauthorized', 401);
     }
 

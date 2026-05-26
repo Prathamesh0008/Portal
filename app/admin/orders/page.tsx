@@ -98,7 +98,7 @@ export default function AdminOrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-amber-50 p-8">
+    <div className="min-h-screen bg-amber-50 p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <PortalNav title="All Orders" subtitle="Review and update customer shipments" homeHref="/admin" backHref="/admin" />
 
@@ -171,22 +171,22 @@ export default function AdminOrdersPage() {
               <p className="text-amber-700">No orders found</p>
             ) : (
               <div className="overflow-x-auto rounded-lg border border-amber-200">
-                <table className="min-w-[1300px] w-full text-sm">
+                <table className="min-w-[1020px] w-full text-xs sm:text-sm">
                   <thead className="sticky top-0 z-10 bg-amber-100">
                     <tr className="border-b border-amber-300">
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Order</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">User</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Customer</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Address</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">City</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">ZIP</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Country</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Product</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Qty</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Tracking</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Status</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Date</th>
-                      <th className="text-left py-3 px-4 text-amber-900 font-semibold">Action</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Order</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">User</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Customer</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Address</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">City</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">ZIP</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Country</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Product</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Qty</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Tracking</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Status</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Date</th>
+                      <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -195,22 +195,22 @@ export default function AdminOrdersPage() {
                         key={`${order._id}-${order.createdAt}-${index}`}
                         className={`border-b border-amber-100 align-top hover:bg-amber-50 ${index % 2 === 0 ? 'bg-white' : 'bg-amber-50/40'}`}
                       >
-                        <td className="py-3 px-4 font-semibold text-amber-900">{order.orderNumber}</td>
-                        <td className="py-3 px-4 text-amber-900">{getUserLabel(order)}</td>
-                        <td className="py-3 px-4 text-amber-900">
+                        <td className="py-2.5 px-3 font-semibold text-amber-900">{order.orderNumber}</td>
+                        <td className="py-2.5 px-3 text-amber-900">{getUserLabel(order)}</td>
+                        <td className="py-2.5 px-3 text-amber-900">
                           {`${order.receiverFirstName || ''} ${order.receiverLastName || ''}`.trim() || '-'}
                         </td>
-                        <td className="py-3 px-4 text-amber-900 max-w-[220px] whitespace-normal break-words">{order.receiverAddress || '-'}</td>
-                        <td className="py-3 px-4 text-amber-900">{order.receiverCity || '-'}</td>
-                        <td className="py-3 px-4 text-amber-900">{order.receiverPostalCode || '-'}</td>
-                        <td className="py-3 px-4 text-amber-900">{order.receiverCountry || '-'}</td>
-                        <td className="py-3 px-4 text-amber-900 max-w-[180px] whitespace-normal break-words">
+                        <td className="py-2.5 px-3 text-amber-900 max-w-[220px] whitespace-normal break-words">{order.receiverAddress || '-'}</td>
+                        <td className="py-2.5 px-3 text-amber-900">{order.receiverCity || '-'}</td>
+                        <td className="py-2.5 px-3 text-amber-900">{order.receiverPostalCode || '-'}</td>
+                        <td className="py-2.5 px-3 text-amber-900">{order.receiverCountry || '-'}</td>
+                        <td className="py-2.5 px-3 text-amber-900 max-w-[180px] whitespace-normal break-words">
                           {order.productName || '-'}
                           {order.productSent && <span className="mt-1 block text-xs text-amber-700">Sent: {order.productSent}</span>}
                         </td>
-                        <td className="py-3 px-4 text-amber-900">{order.quantity ?? '-'}</td>
-                        <td className="py-3 px-4 font-mono text-amber-900">{order.trackingId || '-'}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-2.5 px-3 text-amber-900">{order.quantity ?? '-'}</td>
+                        <td className="py-2.5 px-3 font-mono text-amber-900">{order.trackingId || '-'}</td>
+                        <td className="py-2.5 px-3">
                           <span
                             className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
                               statusStyles[order.status] || 'bg-amber-100 text-amber-900'
@@ -219,8 +219,8 @@ export default function AdminOrdersPage() {
                             {order.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-amber-900">{new Date(order.createdAt).toLocaleDateString()}</td>
-                        <td className="py-3 px-4">
+                        <td className="py-2.5 px-3 text-amber-900">{new Date(order.createdAt).toLocaleDateString()}</td>
+                        <td className="py-2.5 px-3">
                           <Link href={`/admin/orders/${order._id}`}>
                             <span className="inline-flex rounded border border-amber-300 bg-white px-3 py-1.5 font-medium text-amber-900 hover:bg-amber-100">
                               View

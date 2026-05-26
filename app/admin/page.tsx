@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/useAuth';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/Card';
+import { Card } from '@/components/Card';
 import Link from 'next/link';
 import PortalNav from '@/components/PortalNav';
 
@@ -54,7 +54,7 @@ export default function AdminDashboard() {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-amber-50 p-8">
+    <div className="min-h-screen bg-amber-50 p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         <PortalNav
           title="Admin Dashboard"

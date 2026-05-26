@@ -16,6 +16,11 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  const mongoUri = process.env.MONGODB_URI;
+  if (!mongoUri) {
+    throw new Error('Missing MONGODB_URI environment variable');
+  }
+
   if (cached?.conn) {
     return cached.conn;
   }
@@ -26,11 +31,9 @@ async function dbConnect() {
       serverSelectionTimeoutMS: 5000,
     };
 
-    cached!.promise = mongooseClient
-      .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kva_logistics', opts)
-      .then((mongoose) => {
-        return mongoose;
-      });
+    cached!.promise = mongooseClient.connect(mongoUri, opts).then((mongoose) => {
+      return mongoose;
+    });
   }
 
   try {

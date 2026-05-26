@@ -127,7 +127,7 @@ export default function ShippingOrderDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-amber-50 p-8">
+      <div className="min-h-screen bg-amber-50 p-4 sm:p-6 md:p-8">
         <p className="text-amber-700">Loading...</p>
       </div>
     );
@@ -135,14 +135,14 @@ export default function ShippingOrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-amber-50 p-8">
+      <div className="min-h-screen bg-amber-50 p-4 sm:p-6 md:p-8">
         <p className="text-red-600">Order not found</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-amber-50 p-8">
+    <div className="min-h-screen bg-amber-50 p-4 sm:p-6 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <PortalNav
           title={order.orderNumber}
@@ -251,29 +251,29 @@ export default function ShippingOrderDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="text-amber-700">Product</span>
                   <span className="font-semibold text-amber-900">{order.productName}</span>
                 </div>
                 {order.productSent && (
-                  <div className="flex justify-between">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                     <span className="text-amber-700">Product Sent</span>
                     <span className="font-semibold text-amber-900">{order.productSent}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="text-amber-700">Quantity</span>
                   <span className="font-semibold text-amber-900">{order.quantity}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="text-amber-700">Weight</span>
                   <span className="font-semibold text-amber-900">{order.weight} kg</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="text-amber-700">Status</span>
                   <span className="font-semibold text-amber-900">{order.status}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
                   <span className="text-amber-700">Created</span>
                   <span className="font-semibold text-amber-900">{new Date(order.createdAt).toLocaleDateString()}</span>
                 </div>

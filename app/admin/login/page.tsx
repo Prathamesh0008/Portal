@@ -14,8 +14,8 @@ export default function AdminLoginPage() {
 }
 
 function AdminLoginForm() {
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -46,7 +46,7 @@ function AdminLoginForm() {
           <p className="text-amber-700">Admin Portal</p>
         </div>
 
-        <div className="bg-white rounded-lg border-2 border-amber-200 p-8 shadow-lg">
+        <div className="bg-white rounded-lg border-2 border-amber-200 p-6 sm:p-8 shadow-lg">
           <h2 className="text-2xl font-bold text-amber-900 mb-6">Admin Login</h2>
 
           {error && (
@@ -88,12 +88,6 @@ function AdminLoginForm() {
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </form>
-
-          <div className="mt-6 bg-amber-100 border border-amber-300 rounded-lg p-4 text-sm text-amber-900">
-            <p className="font-semibold mb-2">Demo Admin Credentials:</p>
-            <p>Email: admin@example.com</p>
-            <p>Password: password123</p>
-          </div>
         </div>
       </div>
     </div>

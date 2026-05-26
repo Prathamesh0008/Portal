@@ -19,6 +19,20 @@ function sortNewestFirst<T extends { createdAt?: string }>(orders: T[]) {
   });
 }
 
+function dedupeByOrderNumber<T extends { orderNumber?: string; _id?: string; id?: string }>(orders: T[]) {
+  const seen = new Set<string>();
+  const unique: T[] = [];
+
+  for (const order of orders) {
+    const key = String(order.orderNumber || order._id || order.id || '');
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(order);
+  }
+
+  return unique;
+}
+
 function matchesUserFilter(
   order: { customerId?: string | { firstName?: string; lastName?: string; email?: string } },
   userFilter: string
@@ -61,7 +75,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (useLocalData) {
-      const filteredOrders = sortNewestFirst([
+      const filteredOrders = dedupeByOrderNumber(sortNewestFirst([
         ...listLocalOrdersWithCustomers({
         customerId: customerId || undefined,
         routeType: routeType === 'EU_TO_EU' || routeType === 'EU_TO_US' ? routeType : undefined,
@@ -69,7 +83,7 @@ export async function GET(request: NextRequest) {
         status: status || undefined,
         }),
         ...sheetOrders,
-      ]).filter((order) => matchesUserFilter(order, user));
+      ])).filter((order) => matchesUserFilter(order, user));
       const skip = (page - 1) * limit;
       const orders = filteredOrders.slice(skip, skip + limit);
 
@@ -102,7 +116,8 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .populate('customerId', 'firstName lastName email');
 
-    const mergedOrders = sortNewestFirst([...dbOrders, ...sheetOrders]).filter((order) => matchesUserFilter(order, user));
+    const mergedOrders = dedupeByOrderNumber(sortNewestFirst([...dbOrders, ...sheetOrders]))
+      .filter((order) => matchesUserFilter(order, user));
     const orders = mergedOrders.slice(skip, skip + limit);
     const total = mergedOrders.length;
 
