@@ -126,13 +126,11 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return errorResponse('Access denied', 403);
     }
 
-    const { status, trackingId, labelUrl, shippingNotes, productSent } = body;
-
-    if (status) order.status = status;
-    if (trackingId) order.trackingId = trackingId;
-    if (labelUrl) order.labelUrl = labelUrl;
-    if (productSent) order.productSent = productSent;
-    if (shippingNotes) order.shippingNotes = shippingNotes;
+    if (Object.prototype.hasOwnProperty.call(body, 'status')) order.status = body.status;
+    if (Object.prototype.hasOwnProperty.call(body, 'trackingId')) order.trackingId = body.trackingId;
+    if (Object.prototype.hasOwnProperty.call(body, 'labelUrl')) order.labelUrl = body.labelUrl;
+    if (Object.prototype.hasOwnProperty.call(body, 'productSent')) order.productSent = body.productSent;
+    if (Object.prototype.hasOwnProperty.call(body, 'shippingNotes')) order.shippingNotes = body.shippingNotes;
 
     await order.save();
 

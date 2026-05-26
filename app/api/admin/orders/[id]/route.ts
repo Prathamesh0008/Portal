@@ -86,17 +86,17 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return errorResponse('Order not found', 404);
     }
 
-    const { status, trackingId, labelUrl, estimatedDeliveryDate, adminNotes, assignedTo, courier, productSent } = body;
-
-    if (status) order.status = status;
-    if (trackingId) order.trackingId = trackingId;
-    if (labelUrl) order.labelUrl = labelUrl;
-    if (productSent) order.productSent = productSent;
-    if (estimatedDeliveryDate) order.estimatedDeliveryDate = estimatedDeliveryDate;
-    if (adminNotes) order.adminNotes = adminNotes;
-    if (assignedTo) order.assignedTo = assignedTo;
-    if (courier && ['DPD', 'FEDEX'].includes(courier)) {
-      order.courier = courier;
+    if (Object.prototype.hasOwnProperty.call(body, 'status')) order.status = body.status;
+    if (Object.prototype.hasOwnProperty.call(body, 'trackingId')) order.trackingId = body.trackingId;
+    if (Object.prototype.hasOwnProperty.call(body, 'labelUrl')) order.labelUrl = body.labelUrl;
+    if (Object.prototype.hasOwnProperty.call(body, 'productSent')) order.productSent = body.productSent;
+    if (Object.prototype.hasOwnProperty.call(body, 'estimatedDeliveryDate')) {
+      order.estimatedDeliveryDate = body.estimatedDeliveryDate;
+    }
+    if (Object.prototype.hasOwnProperty.call(body, 'adminNotes')) order.adminNotes = body.adminNotes;
+    if (Object.prototype.hasOwnProperty.call(body, 'assignedTo')) order.assignedTo = body.assignedTo;
+    if (Object.prototype.hasOwnProperty.call(body, 'courier') && ['DPD', 'FEDEX'].includes(body.courier)) {
+      order.courier = body.courier;
     }
 
     await order.save();

@@ -117,7 +117,7 @@ function splitFullName(value: string) {
   const parts = value.trim().split(/\s+/);
   return {
     firstName: parts[0] || '',
-    lastName: parts.slice(1).join(' ') || parts[0] || '',
+    lastName: parts.slice(1).join(' '),
   };
 }
 
@@ -484,7 +484,13 @@ export async function updateGoogleSheetOrder(
   }
 
   const updatedOrders = await getGoogleSheetOrders();
-  const updatedOrder = updatedOrders.find((order) => order._id === id || order.id === id);
+  const normalizedId = normalizeSheetOrderId(id);
+  const updatedOrder = updatedOrders.find(
+    (order) =>
+      order._id === id ||
+      order.id === id ||
+      String(order.orderNumber || '').trim() === normalizedId
+  );
 
   if (!updatedOrder) {
     throw new Error('Updated Google Sheet order could not be reloaded');

@@ -33,6 +33,11 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Force sharp corners across the app, regardless of utility classes. */
+* {
+  border-radius: 0 !important;
+}
+
 main,
 section,
 article,

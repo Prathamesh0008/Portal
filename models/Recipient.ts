@@ -52,4 +52,9 @@ const recipientSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+recipientSchema.index(
+  { customerId: 1, email: 1, address: 1, postalCode: 1, houseNumber: 1 },
+  { unique: true }
+);
+
 export default mongoose.models.Recipient || mongoose.model('Recipient', recipientSchema);

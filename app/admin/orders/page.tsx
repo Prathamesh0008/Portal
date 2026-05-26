@@ -108,7 +108,7 @@ export default function AdminOrdersPage() {
             <CardTitle>Filters</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-4">
               <input
                 value={filters.user}
                 onChange={(e) => setFilters({ ...filters, user: e.target.value })}
@@ -171,7 +171,7 @@ export default function AdminOrdersPage() {
               <p className="text-amber-700">No orders found</p>
             ) : (
               <div className="overflow-x-auto rounded-lg border border-amber-200">
-                <table className="min-w-[1020px] w-full text-xs sm:text-sm">
+                <table className="min-w-[960px] w-full text-xs sm:text-sm">
                   <thead className="sticky top-0 z-10 bg-amber-100">
                     <tr className="border-b border-amber-300">
                       <th className="text-left py-2.5 px-3 text-amber-900 font-semibold">Order</th>

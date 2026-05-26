@@ -231,19 +231,31 @@ export async function POST(request: NextRequest) {
     if (body.saveRecipient) {
       await Promise.all(
         parcels.map((parcel: any) =>
-          Recipient.create({
-            customerId: payload.userId,
-            firstName: parcel.receiverFirstName,
-            lastName: parcel.receiverLastName,
-            company: parcel.receiverCompany,
-            country: parcel.receiverCountry,
-            city: parcel.receiverCity,
-            postalCode: parcel.receiverPostalCode,
-            address: parcel.receiverAddress,
-            houseNumber: parcel.receiverHouseNumber,
-            email: parcel.receiverEmail,
-            phone: parcel.receiverPhone,
-          })
+          Recipient.findOneAndUpdate(
+            {
+              customerId: payload.userId,
+              email: String(parcel.receiverEmail || '').toLowerCase(),
+              address: String(parcel.receiverAddress || '').trim(),
+              postalCode: String(parcel.receiverPostalCode || '').trim(),
+              houseNumber: String(parcel.receiverHouseNumber || '').trim(),
+            },
+            {
+              $set: {
+                customerId: payload.userId,
+                firstName: parcel.receiverFirstName,
+                lastName: parcel.receiverLastName,
+                company: parcel.receiverCompany,
+                country: parcel.receiverCountry,
+                city: parcel.receiverCity,
+                postalCode: parcel.receiverPostalCode,
+                address: parcel.receiverAddress,
+                houseNumber: parcel.receiverHouseNumber,
+                email: String(parcel.receiverEmail || '').toLowerCase(),
+                phone: parcel.receiverPhone,
+              },
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+          )
         )
       );
     }

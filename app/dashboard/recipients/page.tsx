@@ -52,14 +52,18 @@ function splitName(name: string) {
   const parts = name.trim().split(/\s+/);
   return {
     firstName: parts[0] || '',
-    lastName: parts.slice(1).join(' ') || parts[0] || '',
+    lastName: parts.slice(1).join(' '),
   };
 }
 
 function toForm(recipient: Recipient): RecipientForm {
+  const duplicateLastName =
+    recipient.firstName &&
+    recipient.lastName &&
+    recipient.firstName.trim().toLowerCase() === recipient.lastName.trim().toLowerCase();
   return {
     country: recipient.country || '',
-    name: `${recipient.firstName} ${recipient.lastName}`.trim(),
+    name: duplicateLastName ? recipient.firstName : `${recipient.firstName} ${recipient.lastName}`.trim(),
     company: recipient.company || '',
     city: recipient.city || '',
     address: recipient.address || '',

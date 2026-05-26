@@ -118,18 +118,23 @@ export default function AdminOrderDetailPage() {
         throw new Error(data.message || 'Failed to update order');
       }
 
-      setOrder(data.data);
+      const updatedOrder = data.data?.order || data.data;
+      setOrder(updatedOrder);
       setFormData({
-        status: data.data.status,
-        trackingId: data.data.trackingId || '',
-        labelUrl: data.data.labelUrl || '',
-        adminNotes: data.data.adminNotes || '',
-        courier: data.data.courier,
-        estimatedDeliveryDate: data.data.estimatedDeliveryDate || '',
-        productSent: data.data.productSent || '',
+        status: updatedOrder.status,
+        trackingId: updatedOrder.trackingId || '',
+        labelUrl: updatedOrder.labelUrl || '',
+        adminNotes: updatedOrder.adminNotes || '',
+        courier: updatedOrder.courier,
+        estimatedDeliveryDate: updatedOrder.estimatedDeliveryDate || '',
+        productSent: updatedOrder.productSent || '',
       });
       setIsFormDirty(false);
-      alert('Order updated successfully');
+      if (data.data?.sheetSynced === false) {
+        alert(data.message || data.data.sheetSyncError || 'Order updated, but Google Sheet sync failed');
+      } else {
+        alert('Order updated successfully');
+      }
     } catch (error) {
       console.error('Failed to update order', error);
       alert(error instanceof Error ? error.message : 'Failed to update order');

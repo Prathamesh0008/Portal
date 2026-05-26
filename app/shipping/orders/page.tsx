@@ -96,7 +96,7 @@ export default function ShippingOrdersPage() {
               <p className="text-amber-700">No orders found</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-[1000px] w-full">
+                <table className="min-w-[860px] w-full">
                   <thead>
                     <tr className="border-b border-amber-200">
                       <th className="text-left py-3 px-4 text-amber-900 font-semibold">Order ID</th>

@@ -65,7 +65,7 @@ export default function DashboardPage() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-amber-900">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-amber-900">Dashboard</h1>
           <p className="text-amber-700 mt-1">Welcome back! Here&apos;s your shipping overview.</p>
         </div>
 
@@ -107,7 +107,29 @@ export default function DashboardPage() {
             ) : orders.length === 0 ? (
               <p className="text-amber-700">No orders yet. Create your first order!</p>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+                <div className="space-y-3 md:hidden">
+                  {orders.slice(0, 5).map((order) => (
+                    <Link key={order._id} href={`/dashboard/orders/${order._id}`}>
+                      <div className="rounded-lg border border-amber-200 p-3 hover:bg-amber-50">
+                        <p className="font-semibold text-amber-900">{order.orderNumber}</p>
+                        <p className="mt-1 text-xs text-amber-700">
+                          {order.routeType === 'EU_TO_EU' ? 'EU to EU' : 'EU to US'} | {order.courier}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="text-xs text-amber-700">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className="inline-block rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-medium text-amber-900">
+                            {order.status}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-[720px] w-full">
                   <thead>
                     <tr className="border-b border-amber-200">
@@ -138,7 +160,8 @@ export default function DashboardPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -146,3 +169,4 @@ export default function DashboardPage() {
     </DashboardLayout>
   );
 }
+

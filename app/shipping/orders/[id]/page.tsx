@@ -37,6 +37,8 @@ export default function ShippingOrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isUploadingLabel, setIsUploadingLabel] = useState(false);
+  const [labelFile, setLabelFile] = useState<File | null>(null);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [formData, setFormData] = useState({
     status: '',
@@ -107,21 +109,56 @@ export default function ShippingOrderDetailPage() {
         throw new Error(data.message || 'Failed to update order');
       }
 
-      setOrder(data.data);
+      const updatedOrder = data.data?.order || data.data;
+      setOrder(updatedOrder);
       setFormData({
-        status: data.data.status,
-        trackingId: data.data.trackingId || '',
-        labelUrl: data.data.labelUrl || '',
-        shippingNotes: data.data.shippingNotes || '',
-        productSent: data.data.productSent || '',
+        status: updatedOrder.status,
+        trackingId: updatedOrder.trackingId || '',
+        labelUrl: updatedOrder.labelUrl || '',
+        shippingNotes: updatedOrder.shippingNotes || '',
+        productSent: updatedOrder.productSent || '',
       });
       setIsFormDirty(false);
-      alert('Order updated successfully');
+      if (data.data?.sheetSynced === false) {
+        alert(data.message || data.data.sheetSyncError || 'Order updated, but Google Sheet sync failed');
+      } else {
+        alert('Order updated successfully');
+      }
     } catch (error) {
       console.error('Failed to update order', error);
       alert(error instanceof Error ? error.message : 'Failed to update order');
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleUploadLabel = async () => {
+    if (!token || !params.id || !labelFile) return;
+
+    setIsUploadingLabel(true);
+    try {
+      const payload = new FormData();
+      payload.append('file', labelFile);
+
+      const response = await fetch(`/api/shipping/orders/${params.id}/label`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: payload,
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to upload label');
+      }
+
+      setIsFormDirty(true);
+      setFormData((current) => ({ ...current, labelUrl: data.data.labelUrl }));
+      setLabelFile(null);
+      alert('Label uploaded. Click "Update Order" to save it.');
+    } catch (error) {
+      console.error('Failed to upload label', error);
+      alert(error instanceof Error ? error.message : 'Failed to upload label');
+    } finally {
+      setIsUploadingLabel(false);
     }
   };
 
@@ -151,7 +188,7 @@ export default function ShippingOrderDetailPage() {
           backHref="/shipping/orders"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {/* Update Form */}
           <Card>
             <CardHeader>
@@ -207,17 +244,23 @@ export default function ShippingOrderDetailPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-amber-900 mb-2">Product Sent</label>
-                  <input
-                    type="text"
-                    value={formData.productSent}
-                    onChange={(e) => {
-                      setIsFormDirty(true);
-                      setFormData({ ...formData, productSent: e.target.value });
-                    }}
-                    className="w-full px-4 py-2 border border-amber-200 rounded focus:outline-none focus:border-amber-400"
-                    placeholder="e.g., CENFORCE 100MG"
-                  />
+                  <label className="block text-sm font-medium text-amber-900 mb-2">Upload Label (PDF/Image)</label>
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                    <input
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={(e) => setLabelFile(e.target.files?.[0] || null)}
+                      className="block w-full text-sm text-amber-900 file:mr-3 file:rounded file:border file:border-amber-300 file:bg-white file:px-3 file:py-2 file:text-amber-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleUploadLabel}
+                      disabled={isUploadingLabel || !labelFile}
+                      className="rounded border border-amber-300 bg-white px-4 py-2 text-sm text-amber-900 hover:bg-amber-50 disabled:opacity-50"
+                    >
+                      {isUploadingLabel ? 'Uploading...' : 'Upload'}
+                    </button>
+                  </div>
                 </div>
 
                 <div>
@@ -244,42 +287,6 @@ export default function ShippingOrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Order Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-sm">
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
-                  <span className="text-amber-700">Product</span>
-                  <span className="font-semibold text-amber-900">{order.productName}</span>
-                </div>
-                {order.productSent && (
-                  <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
-                    <span className="text-amber-700">Product Sent</span>
-                    <span className="font-semibold text-amber-900">{order.productSent}</span>
-                  </div>
-                )}
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
-                  <span className="text-amber-700">Quantity</span>
-                  <span className="font-semibold text-amber-900">{order.quantity}</span>
-                </div>
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
-                  <span className="text-amber-700">Weight</span>
-                  <span className="font-semibold text-amber-900">{order.weight} kg</span>
-                </div>
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
-                  <span className="text-amber-700">Status</span>
-                  <span className="font-semibold text-amber-900">{order.status}</span>
-                </div>
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-3">
-                  <span className="text-amber-700">Created</span>
-                  <span className="font-semibold text-amber-900">{new Date(order.createdAt).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <Card>

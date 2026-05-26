@@ -132,11 +132,11 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       const updates: Record<string, unknown> = {};
 
       if (payload.role === 'ADMIN' || payload.role === 'SHIPPING_DPD' || payload.role === 'SHIPPING_FEDEX') {
-        if (body.status) updates.status = body.status;
-        if (body.trackingId) updates.trackingId = body.trackingId;
-        if (body.labelUrl) updates.labelUrl = body.labelUrl;
-        if (body.estimatedDeliveryDate) updates.estimatedDeliveryDate = body.estimatedDeliveryDate;
-        if (body.shippingNotes) updates.shippingNotes = body.shippingNotes;
+      if (Object.prototype.hasOwnProperty.call(body, 'status')) updates.status = body.status;
+      if (Object.prototype.hasOwnProperty.call(body, 'trackingId')) updates.trackingId = body.trackingId;
+      if (Object.prototype.hasOwnProperty.call(body, 'labelUrl')) updates.labelUrl = body.labelUrl;
+      if (Object.prototype.hasOwnProperty.call(body, 'estimatedDeliveryDate')) updates.estimatedDeliveryDate = body.estimatedDeliveryDate;
+      if (Object.prototype.hasOwnProperty.call(body, 'shippingNotes')) updates.shippingNotes = body.shippingNotes;
       }
 
       if (payload.role === 'ADMIN' && body.adminNotes) {
@@ -172,11 +172,11 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
     // Update allowed fields based on role
     if (payload.role === 'ADMIN' || payload.role === 'SHIPPING_DPD' || payload.role === 'SHIPPING_FEDEX') {
-      if (status) order.status = status;
-      if (trackingId) order.trackingId = trackingId;
-      if (labelUrl) order.labelUrl = labelUrl;
-      if (estimatedDeliveryDate) order.estimatedDeliveryDate = estimatedDeliveryDate;
-      if (shippingNotes) order.shippingNotes = shippingNotes;
+      if (Object.prototype.hasOwnProperty.call(body, 'status')) order.status = status;
+      if (Object.prototype.hasOwnProperty.call(body, 'trackingId')) order.trackingId = trackingId;
+      if (Object.prototype.hasOwnProperty.call(body, 'labelUrl')) order.labelUrl = labelUrl;
+      if (Object.prototype.hasOwnProperty.call(body, 'estimatedDeliveryDate')) order.estimatedDeliveryDate = estimatedDeliveryDate;
+      if (Object.prototype.hasOwnProperty.call(body, 'shippingNotes')) order.shippingNotes = shippingNotes;
     }
 
     if (payload.role === 'ADMIN' && adminNotes) {

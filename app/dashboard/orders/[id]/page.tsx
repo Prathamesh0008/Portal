@@ -85,8 +85,36 @@ export default function OrderDetailPage() {
     );
   }
 
-  const statusSteps = ['PENDING', 'ACCEPTED', 'PROCESSING', 'LABEL_CREATED', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED'];
-  const currentStepIndex = statusSteps.indexOf(order.status);
+  const recipientName =
+    order.receiverFirstName &&
+    order.receiverLastName &&
+    order.receiverFirstName.trim().toLowerCase() === order.receiverLastName.trim().toLowerCase()
+      ? order.receiverFirstName
+      : `${order.receiverFirstName || ''} ${order.receiverLastName || ''}`.trim();
+
+  const milestoneDate = new Date(order.createdAt).toLocaleDateString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+  const milestoneDateLabel = `Expected by, ${new Date(order.createdAt).toLocaleDateString(undefined, { weekday: 'short' })}`;
+  const milestoneProgress = (() => {
+    switch (order.status) {
+      case 'PENDING':
+      case 'ACCEPTED':
+      case 'PROCESSING':
+      case 'LABEL_CREATED':
+        return 0;
+      case 'SHIPPED':
+        return 1;
+      case 'IN_TRANSIT':
+        return 2;
+      case 'DELIVERED':
+        return 3;
+      default:
+        return 0;
+    }
+  })();
 
   return (
     <DashboardLayout>
@@ -110,24 +138,52 @@ export default function OrderDetailPage() {
             <CardTitle>Shipment Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {statusSteps.map((step, index) => (
-                <div key={step} className="flex items-center gap-4">
+            <div className="pb-1">
+              <div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {['Order Confirmed', 'Shipped', 'Out For Delivery', 'Delivered'].map((label, index) => {
+                    const active = index <= milestoneProgress;
+                    return (
+                      <p
+                        key={label}
+                        className={`text-center text-sm font-medium ${active ? 'text-emerald-600' : 'text-slate-300'}`}
+                      >
+                        {label}
+                      </p>
+                    );
+                  })}
+                </div>
+
+                <div className="relative mt-3 h-8">
+                  <div className="absolute left-4 right-4 top-3 h-1 bg-slate-300 sm:left-8 sm:right-8" />
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
-                      index <= currentStepIndex ? 'bg-amber-900 text-white' : 'bg-amber-200 text-amber-900'
-                    }`}
-                  >
-                    {index <= currentStepIndex ? 'OK' : index + 1}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-amber-900">{step}</p>
-                    {step === order.status && (
-                      <p className="text-sm text-amber-700">Current status</p>
-                    )}
+                    className="absolute left-4 top-3 h-1 bg-emerald-500 transition-all duration-300 sm:left-8"
+                    style={{ width: `calc(${(milestoneProgress / 3) * 100}% - 8px)` }}
+                  />
+                  <div className="relative grid grid-cols-4">
+                    {[0, 1, 2, 3].map((index) => (
+                      <div key={index} className="flex justify-center">
+                        <span
+                          className={`mt-0.5 flex h-5 w-5 items-center justify-center border-2 text-[11px] font-bold leading-none ${
+                            index <= milestoneProgress
+                              ? 'border-emerald-500 bg-emerald-500 text-white'
+                              : 'border-slate-300 bg-slate-300 text-transparent'
+                          }`}
+                        >
+                          ✓
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
+
+                <div className="mt-1 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  <p className="text-center text-xs sm:text-sm text-slate-500">{milestoneDate}</p>
+                  <p className="text-center text-xs sm:text-sm text-slate-500">{milestoneDate}</p>
+                  <p className="text-center text-xs sm:text-sm text-slate-500">{milestoneDate}</p>
+                  <p className="text-center text-xs sm:text-sm text-slate-500">{milestoneDateLabel}</p>
+                </div>
+              </div>
             </div>
 
             {order.trackingId && (
@@ -140,9 +196,7 @@ export default function OrderDetailPage() {
             {order.labelUrl && (
               <div className="mt-4">
                 <a
-                  href={order.labelUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`/api/orders/${order._id}/label-pdf`}
                   className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   Download Label
@@ -158,7 +212,7 @@ export default function OrderDetailPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm">
-              <p className="font-semibold text-amber-900">{order.receiverFirstName} {order.receiverLastName}</p>
+              <p className="font-semibold text-amber-900">{recipientName}</p>
               <p className="text-amber-700">
                 {order.receiverAddress} {order.receiverHouseNumber}
               </p>

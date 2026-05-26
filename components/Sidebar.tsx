@@ -28,18 +28,58 @@ export default function Sidebar() {
 
   return (
     <>
-      <button
-        onClick={() => setIsMobileOpen(!isMobileOpen)}
-        className="md:hidden fixed top-4 left-4 z-50 px-3 py-2 bg-amber-50 text-amber-900 rounded border border-amber-200"
-      >
-        Menu
-      </button>
+      {!isMobileOpen && (
+        <button
+          onClick={() => setIsMobileOpen(true)}
+          className="md:hidden fixed top-4 left-4 z-50 inline-flex items-center gap-2 px-3 py-2 bg-amber-50 text-amber-900 rounded border border-amber-200"
+          aria-label="Open menu"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+            aria-hidden="true"
+          >
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+          <span>Menu</span>
+        </button>
+      )}
 
       <aside
         className={`fixed top-0 left-0 h-screen w-64 bg-amber-50 text-amber-900 border-r border-amber-200 p-6 flex flex-col transition-transform md:translate-x-0 ${
           isMobileOpen ? 'translate-x-0' : '-translate-x-full'
         } z-40 md:z-auto`}
       >
+        <button
+          type="button"
+          onClick={() => setIsMobileOpen(false)}
+          className="md:hidden absolute top-4 right-4 inline-flex items-center justify-center h-9 w-9 rounded border border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+          aria-label="Close menu"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+            aria-hidden="true"
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+
         <div className="mb-8 pb-6 border-b border-amber-200">
           <Image
             src="/parcelpilot-logo.svg"
